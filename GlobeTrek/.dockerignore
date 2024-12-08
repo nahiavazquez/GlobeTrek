@@ -1,0 +1,17 @@
+backend/__pycache__
+backend/*.pyc
+globetrek/node_modules
+globetrek/build
+
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.git
+*.vscode
+.env
+*.log
+*.db
+.idea
+.DS_Store
+node_modules
