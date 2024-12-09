@@ -1,38 +1,29 @@
-FROM python:3.9-slim AS python-base
-WORKDIR /app/backend
-
-ENV PYTHONPATH=/app/backend:$PYTHONPATH \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libpq-dev gcc && \
-    rm -rf /var/lib/apt/lists/*
-
-COPY backend/requirements.txt ./requirements.txt
+FROM python:3.9-slim AS gateway
+WORKDIR /gateway
+RUN apt-get update && apt-get install -y libpq-dev gcc && rm -rf /var/lib/apt/lists/*
+COPY gateway/requirements.txt . 
 RUN pip install --no-cache-dir -r requirements.txt
-COPY backend ./backend
+COPY gateway .  
 
-FROM node:16-slim AS node-base
-WORKDIR /app/node
+FROM python:3.9-slim AS backend
+WORKDIR /backend
+ENV PYTHONPATH=/backend:$PYTHONPATH
+RUN apt-get update && apt-get install -y libpq-dev gcc && rm -rf /var/lib/apt/lists/*
+COPY backend/requirements.txt . 
+RUN pip install --no-cache-dir -r requirements.txt
+COPY backend .  
 
-RUN apt-get update && apt-get install -y --no-install-recommends curl && \
-    rm -rf /var/lib/apt/lists/*
-
-COPY gateway/package*.json /app/node/gateway/
-COPY nodeAPI/package*.json /app/node/nodeAPI/
-RUN npm install --legacy-peer-deps --prefix /app/node/nodeAPI
-
-COPY gateway /app/node/gateway
-COPY nodeAPI /app/node/nodeAPI
-
-FROM node:16-slim
+FROM node:16-slim AS globetrek
 WORKDIR /app
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+COPY globetrek/package*.json .
+RUN npm install --no-cache --legacy-peer-deps
+COPY globetrek .
 
-COPY --from=python-base /app/backend /app/backend
-COPY --from=node-base /app/node /app/node
+FROM python:3.9-slim
+WORKDIR /app
+COPY --from=gateway /gateway /app/gateway  
+COPY --from=backend /backend /app/backend  
+COPY --from=globetrek /app /app/globetrek  
 
-COPY start.sh /app/start.sh
-RUN chmod +x /app/start.sh
-
-CMD ["/app/start.sh"]
+CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port 8002 & npm start --prefix /app/globetrek"]
