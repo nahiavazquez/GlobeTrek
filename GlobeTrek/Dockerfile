@@ -16,14 +16,20 @@ COPY backend .
 FROM node:16-slim AS globetrek
 WORKDIR /app
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-COPY globetrek/package*.json .
+COPY globetrek/package*.json . 
 RUN npm install --no-cache --legacy-peer-deps
-COPY globetrek .
+COPY globetrek .  
 
 FROM python:3.9-slim
+
+RUN apt-get update && apt-get install -y nodejs npm && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
+
 COPY --from=gateway /gateway /app/gateway  
 COPY --from=backend /backend /app/backend  
 COPY --from=globetrek /app /app/globetrek  
+
+RUN pip install uvicorn
 
 CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port 8002 & npm start --prefix /app/globetrek"]
