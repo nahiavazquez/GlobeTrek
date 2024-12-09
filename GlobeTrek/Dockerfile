@@ -9,7 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev gcc && \
     rm -rf /var/lib/apt/lists/*
 
-COPY backend/requirements.txt ./
+COPY backend/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY backend ./backend
@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl && \
 
 COPY gateway/package*.json ./gateway/
 COPY nodeAPI/package*.json ./nodeAPI/
+RUN npm install gateway
 RUN npm install --legacy-peer-deps --prefix nodeAPI
 
 COPY gateway ./gateway
@@ -31,8 +32,9 @@ FROM node:16-slim
 WORKDIR /app
 
 COPY --from=python-base /app/backend /app/backend
+
 COPY --from=node-base /app/node /app/node
 
-EXPOSE 8002 8889 3000
+EXPOSE 8889
 
-CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port 8002 & uvicorn gateway.main:app --host 0.0.0.0 --port 8889 & npm start --prefix /app/node/nodeAPI"]
+CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port 8002 & npm start --prefix /app/node/gateway"]
