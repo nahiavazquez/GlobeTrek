@@ -1,23 +1,42 @@
-FROM node:16-slim AS base
-WORKDIR /app
+FROM python:3.9-slim AS python-base
+WORKDIR /app/backend
+
+ENV PYTHONPATH=/app/backend \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 python3-pip python3-dev libpq-dev gcc curl && \
+    libpq-dev gcc && \
     rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app/backend
 COPY backend/requirements.txt ./requirements.txt
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
 COPY backend ./backend
 
+FROM node:16-slim AS node-base
 WORKDIR /app/node
+
+RUN apt-get update && apt-get install -y --no-install-recommends curl python3 python3-pip && \
+    rm -rf /var/lib/apt/lists/*
+
 COPY gateway/package*.json /app/node/gateway/
 COPY nodeAPI/package*.json /app/node/nodeAPI/
 RUN npm install --legacy-peer-deps --prefix /app/node/nodeAPI
+
 COPY gateway /app/node/gateway
 COPY nodeAPI /app/node/nodeAPI
 
+FROM node:16-slim
 WORKDIR /app
+
+RUN apt-get update && apt-get install -y --no-install-recommends python3 python3-pip libpq-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY --from=python-base /app/backend /app/backend
+COPY --from=node-base /app/node /app/node
+
+RUN pip3 install uvicorn
 
 COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
