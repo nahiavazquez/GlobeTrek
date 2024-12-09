@@ -1,5 +1,6 @@
 #!/bin/bash
+uvicorn backend.main:app --host 0.0.0.0 --port 8002 &
 
-python3 -m uvicorn backend.main:app --host 127.0.0.1 --port 8002 &
+uvicorn gateway.main:app --host 0.0.0.0 --port 8889 &
 
-npm start --prefix /app/node/gateway
+npm start --prefix /app/node/nodeAPI
