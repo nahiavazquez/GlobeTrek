@@ -1,4 +1,3 @@
-# Build Python backend
 FROM python:3.9-slim AS python-base
 WORKDIR /app/backend
 
@@ -32,11 +31,12 @@ FROM node:16-slim
 WORKDIR /app
 
 COPY --from=python-base /app/backend /app/backend
+
 COPY --from=node-base /app/node /app/node
 
 COPY start.sh /app/start.sh
 RUN chmod +x /app/start.sh
 
-EXPOSE 8002 8889 3000
+EXPOSE 8889
 
 CMD ["/app/start.sh"]
