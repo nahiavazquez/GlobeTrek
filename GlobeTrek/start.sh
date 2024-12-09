@@ -1,6 +1,8 @@
 #!/bin/bash
-uvicorn backend.main:app --host 0.0.0.0 --port 8002 &
 
-uvicorn gateway.main:app --host 0.0.0.0 --port 8889 &
+export PYTHONPATH=/app/backend:$PYTHONPATH
 
-npm start --prefix /app/node/nodeAPI
+python3 -m uvicorn backend.main:app --host 0.0.0.0 --port 8002 &
+
+PORT=${PORT:-3000}
+npm start --prefix /app/node/gateway -- --port=$PORT
