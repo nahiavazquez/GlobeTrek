@@ -1,3 +1,4 @@
+import json
 from fastapi import FastAPI, Depends, APIRouter, HTTPException, Response
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
@@ -46,6 +47,23 @@ class UserCredentials(BaseModel):
     password: str
 
 def get_google_oauth_flow():
+
+    data = {"web":
+        {
+            "client_id": settings.client_id,
+            "project_id": settings.project_id,
+            "auth_uri":"https://accounts.google.com/o/oauth2/auth",
+            "token_uri":"https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs",
+            "client_secret": settings.client_secret,
+            "redirect_uris":[f'{settings.back_baseUrl}/oauth/callback'],
+            "javascript_origins":[f'{settings.back_baseUrl}',f'{settings.front_baseUrl}']
+            }
+        }
+    
+    with open('client_secret.json', 'w') as f:
+        json.dump(data, f)
+        
     return Flow.from_client_secrets_file(
         './client_secret.json',
         scopes=[
