@@ -108,12 +108,6 @@ async def create_user(user: UserCredentials):
         )
         return response.json()
 
-@api_router.get("/users", response_model=List[dict], tags=["Users"])
-async def fetch_users(token: str = Depends(oauth2_scheme)):
-    async with AsyncClient() as client:
-        response = await client.get(f"{BACK_BASE_URL}/users")
-        return response.json()
-
 @api_router.get("/user/{user_id}", response_model=dict, tags=["Users"])
 async def fetch_user(user_id: int, token: str = Depends(oauth2_scheme)):
     async with AsyncClient() as client:
