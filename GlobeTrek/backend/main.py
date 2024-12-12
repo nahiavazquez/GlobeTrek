@@ -3,7 +3,7 @@ from fastapi import FastAPI, Depends, APIRouter, HTTPException, Response
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from GlobeTrek.backend.crud.security import PWD_CONTEXT
+from crud.security import PWD_CONTEXT
 from config import settings, Settings
 from functools import lru_cache
 from typing import Any, List
