@@ -63,8 +63,6 @@ export default function SignIn(props) {
   const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
-  const [open, setOpen] = React.useState(false);
-  const [loading, setLoading] = React.useState(false);
   const { t, i18n } = useTranslation();
   const { language = 'en' } = useParams();
 
@@ -89,10 +87,6 @@ export default function SignIn(props) {
     }
   }, [language, i18n]);
 
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   const handleSubmit = async (event) => {
     event.preventDefault();
 
@@ -105,8 +99,6 @@ export default function SignIn(props) {
     const password = data.get("password");
 
     try {
-        setLoading(true);
-
         const response = await fetch(`${process.env.REACT_APP_GATEWAY_URL}/login`, {
             method: "POST",
             headers: {
@@ -117,8 +109,6 @@ export default function SignIn(props) {
                 password: password,
             }),
         });
-
-        setLoading(false);
 
         if (!response.ok) {
             if (response.status === 400) {
