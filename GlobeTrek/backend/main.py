@@ -3,6 +3,7 @@ from fastapi import FastAPI, Depends, APIRouter, HTTPException, Response
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
+from GlobeTrek.backend.crud.security import PWD_CONTEXT
 from config import settings, Settings
 from functools import lru_cache
 from typing import Any, List
@@ -22,7 +23,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 app = FastAPI(title="GlobeTrek", openapi_url="/openapi.json")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=[settings.front_baseUrl],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -157,14 +158,6 @@ async def oauth_callback(code: str, db: Session = Depends(get_db)):
         db.refresh(new_user)
         token = create_access_token(sub=new_user.id)
         return RedirectResponse(url=f"{settings.front_baseUrl}/Globetrek/en/new_password?token={token}&id={new_user.id}")
-
-@api_router.get("/users", response_model=List[dict], status_code=200)
-def fetch_users(db: Session = Depends(get_db)):
-    try:
-        users = db.query(User).all()
-        return [{"id": user.id, "name": user.name, "birthday": user.birthday, "email": user.email, "countries": user.countries, "password": user.password} for user in users]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
     
 @api_router.get("/user/{user_id}", response_model=dict, status_code=200, tags=["Users"])
 def fetch_user(
@@ -221,7 +214,8 @@ def modify_user(user_id: int, user_update: UserCreate, db: Session = Depends(get
         if user_update.countries is not None:
             user.countries = user_update.countries
         if user_update.password is not None:
-            user.password = user_update.password
+            hashed_password = PWD_CONTEXT.hash(user_update.password)
+            user.password = hashed_password
             
         db.commit()
 
