@@ -150,14 +150,14 @@ async def oauth_callback(code: str, db: Session = Depends(get_db)):
     existing_user = db.query(User).filter(User.email == email).first()
     if existing_user:
         token = create_access_token(sub=existing_user.id)
-        return RedirectResponse(url=f"{settings.front_baseUrl}/Globetrek/en/home?token={token}&id={existing_user.id}")
+        return RedirectResponse(url=f"{settings.front_baseUrl}/GlobeTrek-front/#/en/home?token={token}&id={existing_user.id}")
     else:
         new_user = User(name=name, birthday=birthday, email=email, password=None, countries=[])
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
         token = create_access_token(sub=new_user.id)
-        return RedirectResponse(url=f"{settings.front_baseUrl}/Globetrek/en/new_password?token={token}&id={new_user.id}")
+        return RedirectResponse(url=f"{settings.front_baseUrl}/GlobeTrek-front/#/en/new_password?token={token}&id={new_user.id}")
     
 @api_router.get("/user/{user_id}", response_model=dict, status_code=200, tags=["Users"])
 def fetch_user(
