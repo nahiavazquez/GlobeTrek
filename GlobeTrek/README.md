@@ -107,8 +107,8 @@ A continuación se detallan los pasos para ejecutar la parte servidora y la part
 
    ```bash
    cd globetrek
-   npm install
-   npm start
+   yarn install
+   yarn start
    ```
 
 #### 3. Instalación y uso de Ollama para itinerarios personalizados
